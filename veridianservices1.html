@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Veridian Services - Printers & Toners</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
+        nav {
+            display: flex;
+            justify-content: center;
+            background-color: #444;
+            padding: 10px;
+        }
+        nav a {
+            color: white;
+            margin: 0 15px;
+            text-decoration: none;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+        section {
+            padding: 20px;
+            margin: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+        }
+        .product-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px;
+            text-align: center;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .product-card img {
+            width: 200px;
+            height: auto;
+            border-radius: 8px;
+        }
+        .product-form input,
+        .product-form textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .product-form button {
+            padding: 10px 15px;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .product-form button:hover {
+            background-color: #555;
+        }
+        footer {
+            text-align: center;
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+        .contact-info {
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <h1>Welcome to Veridian Services</h1>
+        <p>Your one-stop shop for printers, toners, and accessories</p>
+    </header>
+
+    <!-- Navigation -->
+    <nav>
+        <a href="#home">Home</a>
+        <a href="#products">Products</a>
+        <a href="#contact">Contact</a>
+        <a href="#location">Location</a>
+    </nav>
+
+    <!-- Products Section -->
+    <section id="products">
+        <h2>Our Products</h2>
+        
+        <!-- Form to Add New Product -->
+        <div class="product-form">
+            <h3>Add New Product</h3>
+            <input type="text" id="productName" placeholder="Product Name" required />
+            <input type="file" id="productImage" accept="image/*" required />
+            <textarea id="productDescription" placeholder="Product Description" rows="4" required></textarea>
+            <input type="number" id="productPrice" placeholder="Product Price" required />
+            <button onclick="addProduct()">Add Product</button>
+        </div>
+
+        <!-- Display Products -->
+        <div id="productContainer">
+            <h3>Available Products</h3>
+            <!-- Product cards will be dynamically inserted here -->
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact">
+        <h2>Contact Us</h2>
+        <p class="contact-info">Email: <a href="mailto:veridianservices@yahoo.com">veridianservices@yahoo.com</a></p>
+        <p class="contact-info">Phone: +254 708 339 846</p>
+    </section>
+
+    <!-- Location Section -->
+    <section id="location">
+        <h2>Our Location</h2>
+        <p class="contact-info">Visit us at: Sheikh Karume Road, Super Center 1st Floor, Room B-9, Nairobi</p>
+        <iframe src="https://www.google.com/maps?q=Sheikh+Karume+Road,+Nairobi&output=embed" width="100%" height="450" frameborder="0" style="border:0;" allowfullscreen=""></iframe>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2025 Veridian Services. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Function to Add Product to Backend
+        async function addProduct() {
+            const name = document.getElementById('productName').value;
+            const imageFile = document.getElementById('productImage').files[0];
+            const description = document.getElementById('productDescription').value;
+            const price = document.getElementById('productPrice').value;
+
+            const formData = new FormData();
+            formData.append('name', name);
+            formData.append('image', imageFile);
+            formData.append('description', description);
+            formData.append('price', price);
+
+            try {
+                const response = await fetch('http://localhost:5000/api/products', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    alert('Product added successfully!');
+                    displayProducts(); // Reload the products
+                } else {
+                    alert('Error adding product: ' + data.message);
+                }
+            } catch (error) {
+                alert('Error adding product: ' + error.message);
+            }
+        }
+
+        // Function to Fetch and Display Products
+        async function displayProducts() {
+            try {
+                const response = await fetch('http://localhost:5000/api/products');
+                const products = await response.json();
+                const container = document.getElementById('productContainer');
+                container.innerHTML = '<h3>Available Products</h3>'; // Reset the container
+
+                if (products.length === 0) {
+                    container.innerHTML += '<p>No products available.</p>';
+                }
+
+                products.forEach((product) => {
+                    const productCard = `
+                        <div class="product-card">
+                            <img src="${product.image}" alt="${product.name}">
+                            <h3>${product.name}</h3>
+                            <p>${product.description}</p>
+                            <p>Price: KSh ${product.price}</p>
+                        </div>
+                    `;
+                    container.innerHTML += productCard;
+                });
+            } catch (error) {
+                alert('Error fetching products: ' + error.message);
+            }
+        }
+
+        // Load products when page loads
+        window.onload = function () {
+            displayProducts();
+        };
+    </script>
+
+</body>
+</html>
